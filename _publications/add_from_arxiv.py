@@ -1,4 +1,4 @@
-#!/bin/python3
+#! /usr/bin/env python3
 
 import argparse
 import arxiv
@@ -8,7 +8,7 @@ import textwrap
 
 
 def _first_non_stopword(title: str) -> str:
-    for word in re.split("\W", title.lower()):
+    for word in re.split(r"\W", title.lower()):
         if word in ("a", "an", "the", "is", "are", "what", "who", "your"):
             continue
         return word
@@ -20,8 +20,9 @@ def _author_lastname(author_name: str) -> str:
 
 
 def get_info(paper_id: str, out_dir: str) -> None:
+    client = arxiv.Client()
     search = arxiv.Search(id_list=[paper_id])
-    paper = next(search.results())
+    paper = next(client.results(search))
 
     summary = (
         paper.summary.replace("\n\n", "@@--@@")
@@ -30,7 +31,7 @@ def get_info(paper_id: str, out_dir: str) -> None:
     )
 
     tmpl = textwrap.dedent(
-        f"""
+        f"""\
         ---
         layout: publication
         title: "{paper.title}"
@@ -38,7 +39,7 @@ def get_info(paper_id: str, out_dir: str) -> None:
         conference:
         year: {paper.published.year}
         additional_links:
-        - {{name: "ArXiV", url: "https://arxiv.org/abs/{paper_id}"}}
+          - {{name: "ArXiV", url: "https://arxiv.org/abs/{paper_id}"}}
         tags: ["TODO"]
         ---
         {summary}
